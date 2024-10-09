@@ -1,0 +1,5 @@
+version: 3
+
+includes:
+  java:
+    taskfile: ./java/Taskfile.yaml
