@@ -1,0 +1,33 @@
+version: 3
+
+env:
+  DOCKER_CONTENT_TRUST: 1
+
+vars:
+  JAVA_VERSION: 21.0.4-graal
+
+tasks:
+  build:
+    desc: Build Java image
+    cmd: |
+      docker build \
+            --build-arg JAVA_VERSION={{ .JAVA_VERSION }} \
+            --tag java:{{ .JAVA_VERSION }}-alpine \
+            --file java/Dockerfile \
+            .
+    silent: true
+
+  push:
+    desc: Push java image to docker hub
+    cmds:
+      - docker tag java:{{ .JAVA_VERSION }}-alpine dksifoua/java:{{ .JAVA_VERSION }}-alpine
+      - docker push dksifoua/java:{{ .JAVA_VERSION }}-alpine
+
+  scan:
+    desc: Scan built image for vulnerabilities
+    cmd: trivy image java:{{ .JAVA_VERSION }}-alpine
+
+  verify:
+    desc: Check docker image best practices has been followed
+    cmd: dockle --exit-code 1 --exit-level info java:{{ .JAVA_VERSION }}-alpine
+    silent: true
