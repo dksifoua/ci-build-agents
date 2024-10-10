@@ -23,5 +23,7 @@ tasks:
 
   verify:
     desc: Check docker image best practices has been followed
-    cmd: dockle --exit-code 1 --exit-level info java:21-graalvm
+    cmd: |
+      docker image list
+      dockle --exit-code 1 --exit-level info java:21-graalvm
     silent: true

@@ -55,6 +55,7 @@ jobs:
 
       - name: Build Java Image
         run: task java:build
+
       - name: Verify the built image follows the best practises
         run: task java:verify
 
