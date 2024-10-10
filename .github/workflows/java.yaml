@@ -63,13 +63,13 @@ jobs:
 
       - name: Build Java Image
         run: docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --tag java:21-graalvm \
-            --file java/Dockerfile \
-            --output type=docker \
-            --cache-to=type=inline \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            .
+          --platform linux/amd64,linux/arm64 \
+          --tag java:21-graalvm \
+          --file java/Dockerfile \
+          --output type=docker \
+          --cache-to=type=inline \
+          --cache-from=type=local,src=/tmp/.buildx-cache \
+          .
 
       - name: Verify the built image follows the best practises
         run: task java:verify
