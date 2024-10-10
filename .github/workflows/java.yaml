@@ -53,14 +53,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy
 
-      - name: Build Java Image
-        run: task java:build
-
-      - name: Verify the built image follows the best practises
-        run: task java:verify
-
-      - name: Scan the built image for vulnerabilities
-        run: task java:scan
-
-      - name: Push the built image to docker hub
-        run: task java:push
+      - name: Build, verify, scan, & push Java Image
+        run: |
+          docker buildx create --use
+          task java:build java:verify java:scan java:push
