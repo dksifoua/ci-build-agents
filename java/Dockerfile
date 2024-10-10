@@ -20,7 +20,7 @@ RUN groupadd -g $GID $USERNAME \
     && apt-get install -y curl \
     && rm -rf /var/lib/apt/lists \
     && chmod u-s /usr/bin/chfn /usr/bin/gpasswd /usr/bin/su /usr/bin/passwd /usr/bin/chsh /usr/bin/newgrp /usr/bin/mount /usr/bin/umount \
-    && chmod g-s /usr/bin/chage /usr/sbin/pam_extrausers_chkpwd /usr/sbin/unix_chkpwd /usr/bin/expiry
+    && chmod g-s /usr/bin/chage /usr/sbin/pam_extrausers_chkpwd /usr/sbin/unix_chkpwd /usr/bin/expiry \
     && curl --location https://taskfile.dev/install.sh | bash -s -- -d
 
 RUN case $TARGETPLATFORM in \
