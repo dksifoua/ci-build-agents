@@ -9,22 +9,20 @@ tasks:
     desc: Build Java image
     cmd: |
       docker buildx build \
-        --tag java:21-graalvm \
-        --file java/Dockerfile \
-        .
+        --tag dksifoua/java:21-graalvm \
+        --file java/21.Dockerfile \
+        . {{ .CLI_ARGS }}
     silent: true
 
   push:
     desc: Push java image to docker hub
-    cmds:
-      - docker tag java:21-graalvm dksifoua/java:21-graalvm
-      - docker push dksifoua/java:21-graalvm
+    cmd: docker push dksifoua/java:21-graalvm
 
   scan:
     desc: Scan built image for vulnerabilities
-    cmd: trivy image java:21-graalvm
+    cmd: trivy image dksifoua/java:21-graalvm
 
   verify:
     desc: Check docker image best practices has been followed
-    cmd: dockle --exit-code 1 --exit-level info java:21-graalvm
+    cmd: dockle --exit-code 1 --exit-level info dksifoua/java:21-graalvm
     silent: true

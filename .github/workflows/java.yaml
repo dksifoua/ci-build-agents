@@ -30,13 +30,13 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      - name: Setup Task
+      - name: Set up Task
         uses: arduino/setup-task@v2
         with:
           version: 3.x
           repo-token: ${{ secrets.GH_TOKEN }}
 
-      - name: Setup Dockle
+      - name: Set up Dockle
         run: |
           VERSION=$(
            curl --silent "https://api.github.com/repos/goodwithtech/dockle/releases/latest" | \
@@ -45,7 +45,7 @@ jobs:
           ) && curl -L -o dockle.deb https://github.com/goodwithtech/dockle/releases/download/v${VERSION}/dockle_${VERSION}_Linux-64bit.deb
           sudo dpkg -i dockle.deb && rm dockle.deb
 
-      - name: Setup Trivy
+      - name: Set up Trivy
         run: |
           sudo apt-get install wget apt-transport-https gnupg
           wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
@@ -53,21 +53,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy
 
-      - name: Build Java Image
-        run: |
-          docker buildx create --name my-builder --use
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --tag java:21-graalvm \
-            --file java/Dockerfile \
-            .
+      - name: Build & Push Java Image
+        run: task java:build -- --push
 
       - name: Verify the built image follows the best practises
         run: task java:verify
 
       - name: Scan the built image for vulnerabilities
         run: task java:scan
-
-      - name: Push the built image to docker hub
-        if: success()
-        run: task java:push
