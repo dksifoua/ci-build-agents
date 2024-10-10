@@ -68,7 +68,7 @@ jobs:
             --file java/Dockerfile \
             --output type=docker \
             --cache-to=type=inline \
-            --cache-from=type=local,src=/tmp/.buildx-cache
+            --cache-from=type=local,src=/tmp/.buildx-cache \
             .
 
       - name: Verify the built image follows the best practises
