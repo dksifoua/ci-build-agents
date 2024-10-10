@@ -2,17 +2,16 @@ version: 3
 
 env:
   DOCKER_BUILDKIT: 1
+  DOCKER_DEFAULT_PLATFORM: linux/amd64,linux/arm64
 
 tasks:
   build:
     desc: Build Java image
     cmd: |
       docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --output type=docker \
-            --tag java:21-graalvm \
-            --file java/Dockerfile \
-            .
+        --tag java:21-graalvm \
+        --file java/Dockerfile \
+        .
     silent: true
 
   push:

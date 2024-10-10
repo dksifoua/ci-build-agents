@@ -53,13 +53,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy
 
-      - name: Create Buildx builder
+      - name: Build Java Image
         run: |
           docker buildx create --name my-builder --use
-          docker buildx inspect --bootstrap
-
-      - name: Build Java Image
-        run: task java:build
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag java:21-graalvm \
+            --file java/Dockerfile \
+            .
 
       - name: Verify the built image follows the best practises
         run: task java:verify
@@ -68,4 +69,5 @@ jobs:
         run: task java:scan
 
       - name: Push the built image to docker hub
+        if: success()
         run: task java:push
