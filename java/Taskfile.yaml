@@ -8,6 +8,7 @@ tasks:
             --platform linux/amd64,linux/arm64 \
             --tag java:21-graalvm \
             --file java/Dockerfile \
+            --load \
             .
     silent: true
 
@@ -23,7 +24,5 @@ tasks:
 
   verify:
     desc: Check docker image best practices has been followed
-    cmd: |
-      docker image list
-      dockle --exit-code 1 --exit-level info java:21-graalvm
+    cmd: dockle --exit-code 1 --exit-level info java:21-graalvm
     silent: true
