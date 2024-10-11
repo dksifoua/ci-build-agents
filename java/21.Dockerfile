@@ -14,14 +14,16 @@ ENV GRAALVM_HOME=/opt/graalvm-jdk-21
 ENV JAVA_HOME=$GRAALVM_HOME
 ENV PATH=$GRAALVM_HOME/bin:$PATH
 
-RUN groupadd -g $GID $USERNAME \
-    && useradd -m -g $GID -u $UID -s /bin/bash $USERNAME \
-    && apt-get update \
-    && apt-get install -y curl \
-    && rm -rf /var/lib/apt/lists \
-    && chmod u-s /usr/bin/chfn /usr/bin/gpasswd /usr/bin/su /usr/bin/passwd /usr/bin/chsh /usr/bin/newgrp /usr/bin/mount /usr/bin/umount \
-    && chmod g-s /usr/bin/chage /usr/sbin/pam_extrausers_chkpwd /usr/sbin/unix_chkpwd /usr/bin/expiry \
-    && curl --location https://taskfile.dev/install.sh | bash -s -- -d
+ENV GRADLE_VERSION=8.10.2
+ENV GRADLE_HOME=/opt/gradle-$GRADLE_VERSION
+ENV GRADLE_USER_HOME=/home/$USERNAME/.gradle
+ENV PATH=$GRADLE_HOME/bin:$PATH
+
+RUN apt-get update \
+    && apt-get install -y curl unzip \
+    && rm -rf /var/lib/apt/lists
+
+RUN curl --location https://taskfile.dev/install.sh | bash -s -- -d
 
 RUN case $TARGETPLATFORM in \
     "linux/amd64") \
@@ -40,6 +42,20 @@ RUN case $TARGETPLATFORM in \
   && curl -L $GRAALVM_URL -o $GRAALVM_HOME/$GRAALVM_FILE \
   && tar -xvzf $GRAALVM_HOME/$GRAALVM_FILE --strip-components=1 -C $GRAALVM_HOME \
   && rm $GRAALVM_HOME/$GRAALVM_FILE
+
+RUN mkdir -p $GRADLE_HOME \
+    && GRADLE_URL=https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip \
+    && curl -L $GRADLE_URL -o $GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip \
+    && unzip $GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip -d /opt \
+    && rm $GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip
+
+RUN mkdir -p $GRADLE_USER_HOME \
+    && chown -R $UID:$GID $GRADLE_USER_HOME
+
+RUN groupadd -g $GID $USERNAME \
+    && useradd -m -g $GID -u $UID -s /bin/bash $USERNAME \
+    && chmod u-s /usr/bin/chfn /usr/bin/gpasswd /usr/bin/su /usr/bin/passwd /usr/bin/chsh /usr/bin/newgrp /usr/bin/mount /usr/bin/umount \
+    && chmod g-s /usr/bin/chage /usr/sbin/pam_extrausers_chkpwd /usr/sbin/unix_chkpwd /usr/bin/expiry
 
 USER $UID:$GID
 
