@@ -20,7 +20,7 @@ ENV GRADLE_USER_HOME=/home/$USERNAME/.gradle
 ENV PATH=$GRADLE_HOME/bin:$PATH
 
 RUN apt-get update \
-    && apt-get install -y curl unzip \
+    && apt-get install -y build-essential curl unzip zlib1g-dev \
     && rm -rf /var/lib/apt/lists
 
 RUN curl --location https://taskfile.dev/install.sh | bash -s -- -d
@@ -59,13 +59,11 @@ RUN groupadd -g $GID $USERNAME \
 
 USER $UID:$GID
 
-HEALTHCHECK \
-  --interval=30s \
-  --timeout=10s \
-  --start-period=5s \
-  --retries=3 \
-  CMD curl --fail http://localhost/ || exit 1
-# CMD java --version && task --version || exit 1
+HEALTHCHECK --interval=5m --timeout=10s --start-period=5s --retries=1 CMD gcc --version \
+  && gradle --version \
+  && java --version \
+  && native-image --version \
+  && task --version || exit 1
 
 WORKDIR $HOME
 
