@@ -52,8 +52,11 @@ jobs:
       - name: Build & Push Java Image
         run: task java:build -- --push
 
-      - name: Verify the built image follows the best practises
+      - name: Build & Push Java Image with Graalvm support
+        run: task java:build-graalvm -- --push
+
+      - name: Verify the built images follows the best practises
         run: task java:verify
 
-      - name: Scan the built image for vulnerabilities
+      - name: Scan the built images for vulnerabilities
         run: task java:scan
