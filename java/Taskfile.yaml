@@ -4,25 +4,46 @@ env:
   DOCKER_BUILDKIT: 1
   DOCKER_DEFAULT_PLATFORM: linux/amd64,linux/arm64
 
+vars:
+  VERSION:
+    sh: grep 'LABEL version=' java/jdk-21.Dockerfile | cut -d '"' -f 2
+
 tasks:
   build:
     desc: Build Java image
     cmd: |
       docker buildx build \
-        --tag dksifoua/java:21-graalvm \
-        --file java/21.Dockerfile \
+        --tag dksifoua/java-jdk-21:{{ .VERSION }} \
+        --file java/jdk-21.Dockerfile \
+        . {{ .CLI_ARGS }}
+    silent: true
+
+  build-graalvm:
+    desc: Build Java image with Graalvm support
+    cmd: |
+      docker buildx build \
+        --tag dksifoua/java-jdk-21-graalvm:{{ .VERSION }} \
+        --file java/jdk-21-graalvm.Dockerfile \
         . {{ .CLI_ARGS }}
     silent: true
 
   push:
     desc: Push java image to docker hub
-    cmd: docker push dksifoua/java:21-graalvm
+    cmds:
+      - docker push dksifoua/java-jdk-21:{{ .VERSION }}
+      - docker push dksifoua/java-jdk-21-graalvm:{{ .VERSION }}
+    silent: true
 
   scan:
     desc: Scan built image for vulnerabilities
-    cmd: trivy image dksifoua/java:21-graalvm
+    cmds:
+      - trivy image dksifoua/java-jdk-21:{{ .VERSION }}
+      - trivy image dksifoua/java-jdk-21-graalvm:{{ .VERSION }}
+    silent: true
 
   verify:
     desc: Check docker image best practices has been followed
-    cmd: dockle --exit-code 1 --exit-level info dksifoua/java:21-graalvm
+    cmds:
+      - dockle --exit-code 1 --exit-level info dksifoua/java-jdk-21:{{ .VERSION }}
+      - dockle --exit-code 1 --exit-level info dksifoua/java-jdk-21-graalvm:{{ .VERSION }}
     silent: true
