@@ -1,7 +1,8 @@
 FROM --platform=$BUILDPLATFORM ubuntu:24.10
 LABEL authors="Dimitri Sifoua"
-LABEL description="Java Build Agent with GraalVM Support"
+LABEL description="Java 21 Build Agent"
 LABEL maintainer="Dimitri Sifoua <dimitri.sifoua@gmail.com>"
+LABEL version="1.0.1"
 
 ARG TARGETPLATFORM
 
@@ -10,38 +11,37 @@ ENV GID=10001
 ENV USERNAME=dksifoua
 ENV HOME=/home/$USERNAME
 
-ENV GRAALVM_HOME=/opt/graalvm-jdk-21
-ENV JAVA_HOME=$GRAALVM_HOME
-ENV PATH=$GRAALVM_HOME/bin:$PATH
+ENV JAVA_HOME=/opt/java-jdk-21
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 ENV GRADLE_VERSION=8.10.2
 ENV GRADLE_HOME=/opt/gradle-$GRADLE_VERSION
-ENV GRADLE_USER_HOME=/home/$USERNAME/.gradle
 ENV PATH=$GRADLE_HOME/bin:$PATH
 
 RUN apt-get update \
-    && apt-get install -y build-essential curl unzip zlib1g-dev \
+    && apt-get install -y curl unzip \
     && rm -rf /var/lib/apt/lists
 
 RUN curl --location https://taskfile.dev/install.sh | bash -s -- -d
 
 RUN case $TARGETPLATFORM in \
     "linux/amd64") \
-      GRAALVM_FILE="graalvm-jdk-21_linux-x64_bin.tar.gz"; \
-      GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/$GRAALVM_FILE"; \
+      JAVA_FILE="jdk-21_linux-x64_bin.tar.gz"; \
+      JAVA_URL="https://download.oracle.com/java/21/latest/$JAVA_FILE"; \
       ;; \
     "linux/arm64") \
-      GRAALVM_FILE="graalvm-jdk-21_linux-aarch64_bin.tar.gz"; \
-      GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/$GRAALVM_FILE"; \
+      JAVA_FILE="jdk-21_linux-aarch64_bin.tar.gz"; \
+      JAVA_URL="https://download.oracle.com/java/21/latest/$JAVA_FILE"; \
       ;; \
     *) \
       echo "Unsupported platform: $BUILDPLATFORM"; exit 1; \
       ;; \
   esac \
-  && mkdir -p $GRAALVM_HOME \
-  && curl -L $GRAALVM_URL -o $GRAALVM_HOME/$GRAALVM_FILE \
-  && tar -xvzf $GRAALVM_HOME/$GRAALVM_FILE --strip-components=1 -C $GRAALVM_HOME \
-  && rm $GRAALVM_HOME/$GRAALVM_FILE
+    && mkdir -p $JAVA_HOME \
+    && curl -L $JAVA_URL -o $JAVA_HOME/$JAVA_FILE \
+    && tar -xvzf $JAVA_HOME/$JAVA_FILE --strip-components=1 -C $JAVA_HOME \
+    && rm $JAVA_HOME/$JAVA_FILE
+
 
 RUN mkdir -p $GRADLE_HOME \
     && GRADLE_URL=https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip \
@@ -49,8 +49,6 @@ RUN mkdir -p $GRADLE_HOME \
     && unzip $GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip -d /opt \
     && rm $GRADLE_HOME/gradle-$GRADLE_VERSION-bin.zip
 
-RUN mkdir -p $GRADLE_USER_HOME \
-    && chown -R $UID:$GID $GRADLE_USER_HOME
 
 RUN groupadd -g $GID $USERNAME \
     && useradd -m -g $GID -u $UID -s /bin/bash $USERNAME \
@@ -62,7 +60,6 @@ USER $UID:$GID
 HEALTHCHECK --interval=5m --timeout=10s --start-period=5s --retries=1 CMD gcc --version \
   && gradle --version \
   && java --version \
-  && native-image --version \
   && task --version || exit 1
 
 WORKDIR $HOME
