@@ -53,7 +53,7 @@ jobs:
         run: task java:build -- --push
 
       - name: Build & Push Java Image with Graalvm support
-        run: task build-graalvm:build -- --push
+        run: task java:build-graalvm -- --push
 
       - name: Verify the built images follows the best practises
         run: task java:verify
